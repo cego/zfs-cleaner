@@ -13,8 +13,9 @@ If you have a working Go environment, it should be as simple as:
 
     go install github.com/cego/zfs-cleaner
 
-For now no pre-built packages are provided. This will be changed when a formal
-release have been made.
+### Installation from pre-built package
+
+Binary releases are available here: https://github.com/cego/zfs-cleaner/releases
 
 ## Common usage scenario
 
