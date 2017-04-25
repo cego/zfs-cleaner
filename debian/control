@@ -1,0 +1,14 @@
+Source: zfs-cleaner
+Section: devel
+Priority: extra
+Maintainer: Anders Brander <abk@cego.dk>
+Build-Depends: debhelper (>= 7.0.50~)
+Standards-Version: 3.9.1
+Homepage: https://github.com/cego/zfs-cleaner
+
+Package: zfs-cleaner
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Tool for destroying ZFS snapshots after predefined retention periods
+ zfs-cleaner is a simple tool for destroying ZFS snapshots after predefined
+ retention periods. It aims to do one thing only - and do it well.

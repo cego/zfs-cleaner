@@ -1,0 +1,10 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@
+
+override_dh_auto_install: install
+
+install:
+	mkdir -p debian/zfs-cleaner/usr/bin
+	cp zfs-cleaner debian/zfs-cleaner/usr/bin
