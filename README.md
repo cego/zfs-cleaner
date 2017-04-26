@@ -36,7 +36,7 @@ to have longer retention. zfs-cleaner should solve both cases.
 zfs-cleaner is configured through a configuration file resembling the nginx
 configuration format without semicolons.
 
-A configuration consists of one of more *plans*. A plan defines how to clean
+A configuration consists of one or more *plans*. A plan defines how to clean
 one or more ZFS datasets.
 
 A plan is defined like this:
@@ -45,23 +45,23 @@ A plan is defined like this:
         path pool/dataset1
         path pool/dataset2
 
-		keep latest 2
+        keep latest 2
 
-		keep 1m for 2h
-		keep 1h for 2d
-	}
+        keep 1m for 2h
+        keep 1h for 2d
+    }
 
     plan planB {
         path pool/dataset3
 
-		keep latest 10
-	}
+        keep latest 10
+    }
 
     plan planC {
         path pool/dataset4
 
-		keep 0s for 1h
-	}
+        keep 0s for 1h
+    }
 
 *planA* will keep snapshots one minute apart for two hours and one hour apart
 for two days. This will be applied to the dataset *pool/dataset1* and
@@ -75,7 +75,9 @@ Path must refer to one of the results from `sudo zfs list -t filesystem -o name`
 
 ### Units
 
-All periods consits of a positive integer and a unit. A special case is `0s` which when used as a frequency means "everything". The Following units are supported:
+All periods consits of a positive integer and a unit. A special case is `0s`
+which when used as a frequency means "everything". The Following units are
+supported:
 
 | Unit | Description    |
 |------|----------------|
