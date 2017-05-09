@@ -15,7 +15,7 @@ var (
 	verbose = false
 	dryrun  = false
 
-	commandName      = "zfs"
+	commandName      = "/sbin/zfs"
 	commandArguments = []string{"list", "-t", "snapshot", "-o", "name,creation", "-s", "creation", "-r", "-H", "-p"}
 
 	// This can be set to a specific time for testing.
