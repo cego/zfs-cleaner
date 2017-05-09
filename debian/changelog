@@ -1,3 +1,9 @@
+zfs-cleaner (0.1.1alpha-1) any; urgency=low
+
+  * Added hardcoded path to ZFS binary.
+
+ -- Anders Brander <abk@cego.dk>  Tue, 09 May 2017 09:55:13 +0000
+
 zfs-cleaner (0.1alpha-1) any; urgency=low
 
   * Initial alpha release.
