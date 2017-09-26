@@ -91,12 +91,10 @@ keep latest 10
 		t.Fatalf("Failed to write config file: %s", err.Error())
 	}
 
-	err = tmpfile.Close()
-	if err != nil {
-		t.Fatalf("Failed to close config file: %s", err.Error())
-	}
+	defer tmpfile.Close()
+	tmpfile.Seek(0, 0)
 
-	conf, err := readConf(tmpfile.Name())
+	conf, err := readConf(tmpfile)
 	if err != nil {
 		t.Errorf("readConf() failed: %s", err.Error())
 	}
@@ -111,13 +109,9 @@ keep latest 10
 }
 
 func TestReadConfNoFile(t *testing.T) {
-	conf, err := readConf("/non/existing.conf")
+	err := clean(nil, []string{"/non/existing.conf"})
 	if err == nil {
 		t.Errorf("Failed to error on non-existing config file")
-	}
-
-	if conf != nil {
-		t.Errorf("Returned non-nil config on non-existing config file")
 	}
 }
 
@@ -134,12 +128,10 @@ func TestReadConfSyntaxError(t *testing.T) {
 		t.Fatalf("Failed to write config file: %s", err.Error())
 	}
 
-	err = tmpfile.Close()
-	if err != nil {
-		t.Fatalf("Failed to close config file: %s", err.Error())
-	}
+	defer tmpfile.Close()
+	tmpfile.Seek(0, 0)
 
-	conf, err := readConf(tmpfile.Name())
+	conf, err := readConf(tmpfile)
 	if err == nil {
 		t.Errorf("Failed to return error for broken config file")
 	}
@@ -302,4 +294,34 @@ keep latest 1
 	os.Args = []string{os.Args[0], tmpfile.Name()}
 
 	main()
+}
+
+func TestConcurrency(t *testing.T) {
+	tmpfile, _ := ioutil.TempFile("/dev/shm", "test.TestReadConfSyntaxError")
+	defer os.Remove(tmpfile.Name())
+
+	// An empty configuration file is valid too.
+	_, _ = tmpfile.Write([]byte(""))
+	defer tmpfile.Close()
+
+	// This will force clean() to wait for our mainWaitGroup.Done().
+	mainWaitGroup.Add(1)
+
+	go func() {
+		err := clean(nil, []string{tmpfile.Name()})
+		if err != nil {
+			t.Fatalf("clean() returned an error: %s", err.Error())
+		}
+	}()
+
+	// Give some time for the first clean() to aquire the lock.
+	time.Sleep(time.Millisecond * 100)
+
+	err := clean(nil, []string{tmpfile.Name()})
+	if err == nil {
+		t.Fatalf("clean() failed to detect locked configuration file")
+	}
+
+	// Let the first clean() exit.
+	mainWaitGroup.Done()
 }

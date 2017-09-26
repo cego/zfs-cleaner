@@ -93,7 +93,8 @@ zfs-cleaner has a single mandatory argument. The path to a configuration file.
 
 A few flags are provided as well.
 
-| Short | Long        | Description                                  |  
-|-------|-------------|----------------------------------------------|
-| `-n`  | `--dryrun`  | Do nothing, print what could have been done. |
-| `-v`  | `--verbose` | Do everything, print what's done.            |
+| Short | Long           | Description                                                                               |
+|-------|----------------|-------------------------------------------------------------------------------------------|
+| `-n`  | `--dryrun`     | Do nothing, print what could have been done.                                              |
+| `-v`  | `--verbose`    | Do everything, print what's done.                                                         |
+| `-c`  | `--concurrent` | Allow more than one zfs-cleaner to operate on the same configuration file simultaneously. |

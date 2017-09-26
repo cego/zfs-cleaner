@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"sync"
+	"syscall"
 	"time"
 
 	"github.com/cego/zfs-cleaner/conf"
@@ -12,14 +14,18 @@ import (
 )
 
 var (
-	verbose = false
-	dryrun  = false
+	verbose    = false
+	dryrun     = false
+	concurrent = false
 
 	commandName      = "/sbin/zfs"
 	commandArguments = []string{"list", "-t", "snapshot", "-o", "name,creation", "-s", "creation", "-r", "-H", "-p"}
 
 	// This can be set to a specific time for testing.
 	now = time.Now()
+
+	// tasks can be added to this for testing.
+	mainWaitGroup sync.WaitGroup
 
 	// This can be changed to true when testing.
 	panicBail = false
@@ -34,6 +40,7 @@ var (
 func init() {
 	rootCmd.PersistentFlags().BoolVarP(&dryrun, "dryrun", "n", false, "Do nothing destructive, only print")
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Be more verbose")
+	rootCmd.PersistentFlags().BoolVarP(&concurrent, "concurrent", "c", false, "Allow more than one zfs-cleaner to operate on the same configuration file simultaneously")
 }
 
 func getList(name string) (zfs.SnapshotList, error) {
@@ -47,17 +54,12 @@ func getList(name string) (zfs.SnapshotList, error) {
 	return zfs.NewSnapshotListFromOutput(output, name)
 }
 
-func readConf(path string) (*conf.Config, error) {
+func readConf(r *os.File) (*conf.Config, error) {
 	conf := &conf.Config{}
 
-	r, err := os.Open(path)
+	err := conf.Read(r)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open %s: %s", path, err.Error())
-	}
-
-	err = conf.Read(r)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse %s: %s", path, err.Error())
+		return nil, fmt.Errorf("failed to parse %s: %s", r.Name(), err.Error())
 	}
 
 	return conf, nil
@@ -103,9 +105,26 @@ func clean(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("%s /path/to/config.conf", cmd.Name())
 	}
 
-	conf, err := readConf(args[0])
+	confFile, err := os.Open(args[0])
+	if err != nil {
+		return fmt.Errorf("failed to open %s: %s", args[0], err.Error())
+	}
+	defer confFile.Close()
+
+	conf, err := readConf(confFile)
 	if err != nil {
 		return err
+	}
+
+	if !concurrent {
+		fd := int(confFile.Fd())
+		err = syscall.Flock(fd, syscall.LOCK_EX|syscall.LOCK_NB)
+		if err != nil {
+			return fmt.Errorf("Could not aquire lock on '%s'", confFile.Name())
+		}
+
+		// make sure to unlock :)
+		defer syscall.Flock(fd, syscall.LOCK_UN)
 	}
 
 	lists, err := processAll(now, conf)
@@ -133,6 +152,8 @@ func clean(cmd *cobra.Command, args []string) error {
 			return err
 		}
 	}
+
+	mainWaitGroup.Wait()
 
 	return nil
 }
