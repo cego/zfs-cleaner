@@ -1,3 +1,9 @@
+zfs-cleaner (0.2alpha-1) any; urgency=low
+
+  * Added simple locking.
+
+ -- Anders Brander <abk@cego.dk>  Wed, 27 Sep 2017 08:17:50 +0000
+
 zfs-cleaner (0.1.1alpha-1) any; urgency=low
 
   * Added hardcoded path to ZFS binary.
