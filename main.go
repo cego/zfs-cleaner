@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -17,6 +18,7 @@ var (
 	verbose    = false
 	dryrun     = false
 	concurrent = false
+	plancheck  = false
 
 	commandName      = "/sbin/zfs"
 	commandArguments = []string{"list", "-t", "snapshot", "-o", "name,creation", "-s", "creation", "-r", "-H", "-p"}
@@ -41,6 +43,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&dryrun, "dryrun", "n", false, "Do nothing destructive, only print")
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Be more verbose")
 	rootCmd.PersistentFlags().BoolVarP(&concurrent, "concurrent", "c", false, "Allow more than one zfs-cleaner to operate on the same configuration file simultaneously")
+	rootCmd.PersistentFlags().BoolVarP(&plancheck, "plancheck", "p", false, "Print mounts that have no plan and exit")
 }
 
 func getList(name string) (zfs.SnapshotList, error) {
@@ -88,6 +91,29 @@ func processAll(now time.Time, conf *conf.Config) ([]zfs.SnapshotList, error) {
 	return lists, nil
 }
 
+func planCheck(conf *conf.Config) error {
+	args := []string{"list", "-t", "filesystem", "-o", "name", "-H"}
+	output, err := exec.Command(commandName, args...).Output()
+	if err != nil {
+		return err
+	}
+
+	m := map[string]bool{}
+	for _, plan := range conf.Plans {
+		for _, path := range plan.Paths {
+			m[path] = true
+		}
+	}
+
+	for _, store := range strings.Fields(string(output)) {
+		if !m[store] {
+			fmt.Printf("No plan found for path: %s\n", store)
+		}
+	}
+
+	return nil
+}
+
 func main() {
 	err := rootCmd.Execute()
 	if err != nil {
@@ -125,6 +151,10 @@ func clean(cmd *cobra.Command, args []string) error {
 
 		// make sure to unlock :)
 		defer syscall.Flock(fd, syscall.LOCK_UN)
+	}
+
+	if plancheck {
+		return planCheck(conf)
 	}
 
 	lists, err := processAll(now, conf)
