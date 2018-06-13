@@ -107,7 +107,7 @@ func planCheck(conf *conf.Config) error {
 
 	for _, store := range strings.Fields(string(output)) {
 		if !m[store] {
-			fmt.Printf("No plan found for path: %s\n", store)
+			fmt.Printf("No plan found for path: '%s'\n", store)
 		}
 	}
 
