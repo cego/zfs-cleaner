@@ -42,6 +42,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&dryrun, "dryrun", "n", false, "Do nothing destructive, only print")
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Be more verbose")
 	rootCmd.PersistentFlags().BoolVarP(&concurrent, "concurrent", "c", false, "Allow more than one zfs-cleaner to operate on the same configuration file simultaneously")
+	rootCmd.TraverseChildren = true
 }
 
 func getList(name string) (zfs.SnapshotList, error) {
