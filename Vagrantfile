@@ -7,7 +7,7 @@ Vagrant.configure("2") do |config|
 
   config.vm.provision "shell", inline: <<-SHELL
     locale-gen en_GB.UTF-8
-    add-apt-repository ppa:longsleep/golang-backports
+
     apt-get update
     apt-get install -y zfsutils-linux zfs-initramfs
 

@@ -17,7 +17,6 @@ var (
 	verbose    = false
 	dryrun     = false
 	concurrent = false
-	plancheck  = false
 
 	commandName      = "/sbin/zfs"
 	commandArguments = []string{"list", "-t", "snapshot", "-o", "name,creation", "-s", "creation", "-r", "-H", "-p"}
