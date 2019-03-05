@@ -97,4 +97,3 @@ A few flags are provided as well.
 |-------|----------------|-------------------------------------------------------------------------------------------|
 | `-n`  | `--dryrun`     | Do nothing, print what could have been done.                                              |
 | `-v`  | `--verbose`    | Do everything, print what's done.                                                         |
-| `-c`  | `--concurrent` | Allow more than one zfs-cleaner to operate on the same configuration file simultaneously. |
