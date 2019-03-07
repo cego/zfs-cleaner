@@ -14,9 +14,8 @@ import (
 )
 
 var (
-	verbose    = false
-	dryrun     = false
-	concurrent = false
+	verbose = false
+	dryrun  = false
 
 	commandName      = "/sbin/zfs"
 	commandArguments = []string{"list", "-t", "snapshot", "-o", "name,creation", "-s", "creation", "-r", "-H", "-p"}
@@ -40,7 +39,6 @@ var (
 func init() {
 	rootCmd.PersistentFlags().BoolVarP(&dryrun, "dryrun", "n", false, "Do nothing destructive, only print")
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Be more verbose")
-	rootCmd.PersistentFlags().BoolVarP(&concurrent, "concurrent", "c", false, "Allow more than one zfs-cleaner to operate on the same configuration file simultaneously")
 	rootCmd.TraverseChildren = true
 }
 
@@ -117,16 +115,14 @@ func clean(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if !concurrent {
-		fd := int(confFile.Fd())
-		err = syscall.Flock(fd, syscall.LOCK_EX|syscall.LOCK_NB)
-		if err != nil {
-			return fmt.Errorf("Could not aquire lock on '%s'", confFile.Name())
-		}
-
-		// make sure to unlock :)
-		defer syscall.Flock(fd, syscall.LOCK_UN)
+	fd := int(confFile.Fd())
+	err = syscall.Flock(fd, syscall.LOCK_EX|syscall.LOCK_NB)
+	if err != nil {
+		return fmt.Errorf("Could not aquire lock on '%s'", confFile.Name())
 	}
+
+	// make sure to unlock :)
+	defer syscall.Flock(fd, syscall.LOCK_UN)
 
 	lists, err := processAll(now, conf)
 	if err != nil {
