@@ -37,7 +37,7 @@ func NewSnapshotListFromOutput(output []byte, name string) (SnapshotList, error)
 		}
 
 		if lastCreation.Sub(s.Creation) > time.Second {
-			return nil, fmt.Errorf("output does not appear sorted. %d < %d", s.Creation, lastCreation)
+			return nil, fmt.Errorf("output does not appear sorted. %d < %d", s.Creation.Unix(), lastCreation.Unix())
 		}
 
 		lastCreation = s.Creation

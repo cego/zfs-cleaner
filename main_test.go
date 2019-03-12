@@ -12,6 +12,12 @@ import (
 
 func init() {
 	panicBail = true
+
+	// Mute normal output when running tests.
+	stdout = ioutil.Discard
+	stderr = ioutil.Discard
+	rootCmd.SilenceUsage = true
+	rootCmd.SilenceErrors = true
 }
 
 func TestGetList(t *testing.T) {

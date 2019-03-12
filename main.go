@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"sync"
@@ -34,6 +35,10 @@ var (
 		Short: "Tool for destroying ZFS snapshots after predefined retention periods",
 		RunE:  clean,
 	}
+
+	// Can be overridden when running tests.
+	stdout io.Writer = os.Stdout
+	stderr io.Writer = os.Stderr
 )
 
 func init() {
