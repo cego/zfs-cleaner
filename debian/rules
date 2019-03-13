@@ -8,3 +8,6 @@ override_dh_auto_install: install
 install:
 	mkdir -p debian/zfs-cleaner/usr/bin
 	cp zfs-cleaner debian/zfs-cleaner/usr/bin
+
+override_dh_builddeb:
+	dh_builddeb -- -Zgzip
