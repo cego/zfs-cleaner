@@ -1,3 +1,13 @@
+zfs-cleaner (0.3alpha-1) any; urgency=low
+
+  * Use gzip for deb package.
+  * Added deb changelog.
+  * Added a plan checker.
+  * Never allow concurrent runs.
+  * Less talkative tests.
+
+ -- Anders Brander <abk@cego.dk>  Thu, 14 Mar 2019 10:12:21 +0000
+
 zfs-cleaner (0.2alpha-1) any; urgency=low
 
   * Added simple locking.
