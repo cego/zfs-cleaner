@@ -1,9 +1,14 @@
 package conf
 
 import (
-	"errors"
 	"strconv"
 	"time"
+)
+
+const (
+	ErrDurationTooShort   = Error("duration string too short")
+	ErrUnknownUnit        = Error("unknown unit")
+	ErrNegativeNotAllowed = Error("negative duration not allowed")
 )
 
 func parseDuration(input string) (time.Duration, error) {
@@ -17,13 +22,13 @@ func parseDuration(input string) (time.Duration, error) {
 
 	var t time.Duration
 	if len(input) < 2 {
-		return t, errors.New("duration string too short")
+		return t, ErrDurationTooShort
 	}
 
 	unitIdentifier := input[len(input)-1:]
 	unitSize, found := units[unitIdentifier]
 	if !found {
-		return t, errors.New("unknown unit")
+		return t, ErrUnknownUnit
 	}
 
 	value, err := strconv.ParseInt(input[:len(input)-1], 10, 64)
@@ -32,7 +37,7 @@ func parseDuration(input string) (time.Duration, error) {
 	}
 
 	if value < 0 {
-		return t, errors.New("negative duration not allowed")
+		return t, ErrNegativeNotAllowed
 	}
 
 	t = time.Duration(value) * unitSize
