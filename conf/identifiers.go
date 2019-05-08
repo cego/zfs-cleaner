@@ -1,9 +1,10 @@
 package conf
 
 const (
-	planIdentifier = "plan"
-	keepIdentifier = "keep"
-	pathIdentifier = "path"
+	planIdentifier    = "plan"
+	keepIdentifier    = "keep"
+	pathIdentifier    = "path"
+	protectIdentifier = "protect"
 )
 
 const (

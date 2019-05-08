@@ -1,7 +1,10 @@
 package conf
 
 import (
+	"bufio"
+	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -12,6 +15,7 @@ type Plan struct {
 	Latest  int
 	Periods []Period
 	conf    *Config
+	Protect []string
 }
 
 const (
@@ -38,6 +42,10 @@ func (p *Plan) planLine(s *state) action {
 
 	if len(s.fields) == 2 && s.fields[0] == pathIdentifier {
 		return p.path
+	}
+
+	if len(s.fields) == 2 && s.fields[0] == protectIdentifier {
+		return p.protect
 	}
 
 	if len(s.fields) == 1 && s.fields[0] == blockEnd {
@@ -107,6 +115,41 @@ func (p *Plan) path(s *state) action {
 	p.Paths = append(p.Paths, s.fields[1])
 
 	return p.planLine
+}
+
+func readValue(s *state, value string, target *[]string, next action) action {
+	if value[0] == '<' {
+		return readFile(s, strings.TrimSpace(value[1:]), target, next)
+	}
+
+	*target = append(*target, value)
+
+	return next
+}
+
+func readFile(s *state, path string, target *[]string, next action) action {
+	f, err := os.Open(path)
+	if err != nil {
+		return s.error(err)
+	}
+	defer f.Close()
+
+	finfo, _ := f.Stat()
+	if finfo.IsDir() {
+		return s.error(Error(path + " is a directory"))
+	}
+
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		value := strings.TrimSpace(scanner.Text())
+		*target = append(*target, value)
+	}
+
+	return next
+}
+
+func (p *Plan) protect(s *state) action {
+	return readValue(s, s.fields[1], &p.Protect, p.planLine)
 }
 
 func (p *Plan) end(s *state) action {

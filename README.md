@@ -55,21 +55,25 @@ A plan is defined like this:
         path pool/dataset3
 
         keep latest 10
+        protect </etc/<zfs-cleaner.protected
     }
 
     plan planC {
         path pool/dataset4
 
         keep 0s for 1h
+        protect synced_to_remote
     }
 
 *planA* will keep snapshots one minute apart for two hours and one hour apart
 for two days. This will be applied to the dataset *pool/dataset1* and
 *pool/dataset2*. Besides that the latest two snapshots will be kept.
 
-*planB* will keep the ten latest snapshots from *pool/dataset3*.
+*planB* will keep the ten latest snapshots from *pool/dataset3* - but never
+destroy any snapshot name read from `/etc/<zfs-cleaner.protected`.
 
-*planC* will keep all snapshots for an hour.
+*planC* will keep all snapshots for an hour, and any snapshot named
+`synced_to_remote` will be kept forever.
 
 Path must refer to one of the results from `sudo zfs list -t filesystem -o name`.
 
