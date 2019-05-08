@@ -256,3 +256,25 @@ func TestSieve(t *testing.T) {
 		testKeep(i, t, input, c.expected)
 	}
 }
+
+func TestKeepNamed(t *testing.T) {
+	cases := []struct {
+		names    []string
+		expected []bool
+	}{
+		{[]string{"s1"}, []bool{true, false, false}},
+		{[]string{"s2"}, []bool{false, true, false}},
+		{[]string{"s3"}, []bool{false, false, true}},
+		{[]string{"s1", "s3"}, []bool{true, false, true}},
+		{[]string{}, []bool{false, false, false}},
+		{nil, []bool{false, false, false}},
+		{[]string{"nonexisting"}, []bool{false, false, false}},
+		{[]string{""}, []bool{false, false, false}},
+	}
+
+	for ii, c := range cases {
+		list.ResetSieve()
+		list.KeepNamed(c.names)
+		testKeep(ii, t, list, c.expected)
+	}
+}
