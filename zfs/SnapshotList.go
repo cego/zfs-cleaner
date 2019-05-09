@@ -111,7 +111,9 @@ func (l SnapshotList) KeepNamed(names []string) {
 	}
 
 	for _, snapshot := range l {
-		snapshot.Keep = index[snapshot.SnapshotName()]
+		if index[snapshot.SnapshotName()] {
+			snapshot.Keep = true
+		}
 	}
 }
 
