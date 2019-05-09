@@ -102,6 +102,21 @@ func (l SnapshotList) KeepLatest(num int) {
 	}
 }
 
+// KeepNamed will keep all snapshots named in names.
+func (l SnapshotList) KeepNamed(names []string) {
+	// Start by indexing names for lookups.
+	index := make(map[string]bool)
+	for _, name := range names {
+		index[name] = true
+	}
+
+	for _, snapshot := range l {
+		if index[snapshot.SnapshotName()] {
+			snapshot.Keep = true
+		}
+	}
+}
+
 // KeepOldest keeps the num oldest snapshots.
 func (l SnapshotList) KeepOldest(num int) {
 	for i := 0; i < num && i < len(l); i++ {

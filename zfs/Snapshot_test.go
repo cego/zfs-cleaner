@@ -46,3 +46,25 @@ func TestNewSnapshotFromLine(t *testing.T) {
 		}
 	}
 }
+
+func TestSnapshotName(t *testing.T) {
+	cases := []struct {
+		input    string
+		expected string
+	}{
+		{"path@s1", "s1"},
+		{"s1", "s1"},
+		{"@s1", "s1"},
+		{"@", ""},
+	}
+
+	for i, c := range cases {
+		s := &Snapshot{
+			Name: c.input,
+		}
+		result := s.SnapshotName()
+		if result != c.expected {
+			t.Fatalf("%d Got wrong name from '%s', expected '%s', got '%s'", i, c.input, c.expected, result)
+		}
+	}
+}

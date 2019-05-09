@@ -90,6 +90,8 @@ path /buh
 path /buh/2
 keep 1d for 30d
 keep 1h for 1d
+protect horse
+protect sheep
 }`, "", &Config{
 			Plans: []Plan{
 				Plan{
@@ -105,6 +107,10 @@ keep 1h for 1d
 							Frequency: time.Hour,
 							Age:       24 * time.Hour,
 						},
+					},
+					Protect: []string{
+						"horse",
+						"sheep",
 					},
 				},
 			},

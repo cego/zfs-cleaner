@@ -55,3 +55,14 @@ func NewSnapshotFromLine(line string) (*Snapshot, error) {
 func (s *Snapshot) String() string {
 	return fmt.Sprintf("%s:%d:%v", s.Name, s.Creation.Unix(), s.Keep)
 }
+
+// SnapshotName returns the snapshot name part of the full name. This is the
+// part after the @.
+func (s *Snapshot) SnapshotName() string {
+	parts := strings.Split(s.Name, "@")
+	if len(parts) != 2 {
+		return s.Name
+	}
+
+	return parts[1]
+}

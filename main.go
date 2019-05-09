@@ -78,6 +78,8 @@ func processAll(now time.Time, conf *conf.Config) ([]zfs.SnapshotList, error) {
 				return nil, err
 			}
 
+			list.KeepNamed(plan.Protect)
+
 			list.KeepLatest(plan.Latest)
 			for _, period := range plan.Periods {
 				start := now.Add(-period.Age)
