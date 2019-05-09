@@ -1,3 +1,9 @@
+zfs-cleaner (0.4alpha-1) any; urgency=low
+
+  * Added protect keyword.
+
+ -- Anders Brander <abk@cego.dk>  Thu, 09 May 2019 13:55:05 +0000
+
 zfs-cleaner (0.3alpha-1) any; urgency=low
 
   * Use gzip for deb package.
