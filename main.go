@@ -124,7 +124,7 @@ func clean(cmd *cobra.Command, args []string) error {
 	fd := int(confFile.Fd())
 	err = syscall.Flock(fd, syscall.LOCK_EX|syscall.LOCK_NB)
 	if err != nil {
-		return fmt.Errorf("Could not aquire lock on '%s'", confFile.Name())
+		return fmt.Errorf("could not aquire lock on '%s'", confFile.Name())
 	}
 
 	// make sure to unlock :)
