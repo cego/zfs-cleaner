@@ -18,7 +18,7 @@ type (
 )
 
 var (
-	// ErrMalformedLine will be returned if output from zfs is unuseable.
+	// ErrMalformedLine will be returned if output from zfs is unusable.
 	ErrMalformedLine = errors.New("broken line")
 )
 
