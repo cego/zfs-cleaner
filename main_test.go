@@ -64,7 +64,7 @@ func TestGetListError(t *testing.T) {
 func TestReadConf(t *testing.T) {
 	expected := &conf.Config{
 		Plans: []conf.Plan{
-			conf.Plan{
+			{
 				Name:   "buh",
 				Paths:  []string{"/buh"},
 				Latest: 10,

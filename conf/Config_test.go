@@ -25,7 +25,7 @@ path /buh
 keep latest 10
 }`, "", &Config{
 			Plans: []Plan{
-				Plan{
+				{
 					Name:   "buh",
 					Paths:  []string{"/buh"},
 					Latest: 10,
@@ -41,12 +41,12 @@ keep 1d for 30d
 keep latest 10
 }`, "", &Config{
 			Plans: []Plan{
-				Plan{
+				{
 					Name:   "buh",
 					Paths:  []string{"/buh"},
 					Latest: 10,
 					Periods: []Period{
-						Period{
+						{
 							Frequency: 24 * time.Hour,
 							Age:       30 * 24 * time.Hour,
 						},
@@ -66,16 +66,16 @@ keep 1d   for 30d
 keep latest 10
     }`, "", &Config{
 			Plans: []Plan{
-				Plan{
+				{
 					Name:   "buh",
 					Paths:  []string{"/buh"},
 					Latest: 10,
 					Periods: []Period{
-						Period{
+						{
 							Frequency: 24 * time.Hour,
 							Age:       30 * 24 * time.Hour,
 						},
-						Period{
+						{
 							Frequency: time.Hour,
 							Age:       24 * time.Hour,
 						},
@@ -94,16 +94,16 @@ protect horse
 protect sheep
 }`, "", &Config{
 			Plans: []Plan{
-				Plan{
+				{
 					Name:   "buh",
 					Paths:  []string{"/buh", "/buh/2"},
 					Latest: 1,
 					Periods: []Period{
-						Period{
+						{
 							Frequency: 24 * time.Hour,
 							Age:       30 * 24 * time.Hour,
 						},
-						Period{
+						{
 							Frequency: time.Hour,
 							Age:       24 * time.Hour,
 						},

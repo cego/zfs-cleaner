@@ -122,13 +122,13 @@ func TestLatestEmpty(t *testing.T) {
 }
 
 func TestString(t *testing.T) {
-	out := fmt.Sprintf("%s", empty)
+	out := empty.String()
 
 	if out != "[ ]" {
 		t.Fatalf("String() returned wrong output for empty list")
 	}
 
-	out = fmt.Sprintf("%s", list)
+	out = list.String()
 
 	if len(out) < 10 {
 		t.Fatalf("String() returned wrong output for list")
