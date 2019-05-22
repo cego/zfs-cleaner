@@ -23,7 +23,12 @@ func TestGetList(t *testing.T) {
 	// We override the zfs command in tests, to avoid running the real zfs
 	// binary.
 	commandName = "echo"
-	commandArguments = []string{"-e", "-n", "playground/fs1@snap1\t1492989570\nplayground/fs1@snap2\t1492989572\nplayground/fs1@snap3\t1492989573\nplayground/fs1@snap4\t1492989574\nplayground/fs1@snap5\t1492989587\n"}
+	commandArguments = []string{"-e", "-n", `playground/fs1@snap1\t1492989570
+playground/fs1@snap2\t1492989572
+playground/fs1@snap3\t1492989573
+playground/fs1@snap4\t1492989574
+playground/fs1@snap5\t1492989587
+`}
 
 	list, err := getList("playground/fs1")
 	if err != nil {
@@ -148,7 +153,12 @@ func TestReadConfSyntaxError(t *testing.T) {
 
 func TestProcessAll(t *testing.T) {
 	commandName = "echo"
-	commandArguments = []string{"-e", "-n", "playground/fs1@snap1\t1492989570\nplayground/fs1@snap2\t1492989572\nplayground/fs1@snap3\t1492989573\nplayground/fs1@snap4\t1492989574\nplayground/fs1@snap5\t1492989587\n"}
+	commandArguments = []string{"-e", "-n", `playground/fs1@snap1\t1492989570
+playground/fs1@snap2\t1492989572
+playground/fs1@snap3\t1492989573
+playground/fs1@snap4\t1492989574
+playground/fs1@snap5\t1492989587
+`}
 
 	conf := &conf.Config{
 		Plans: []conf.Plan{
@@ -182,7 +192,12 @@ func TestProcessAll(t *testing.T) {
 
 func TestProcessAllFail(t *testing.T) {
 	commandName = "false"
-	commandArguments = []string{"-e", "-n", "playground/fs1@snap1\t1492989570\nplayground/fs1@snap2\t1492989572\nplayground/fs1@snap3\t1492989573\nplayground/fs1@snap4\t1492989574\nplayground/fs1@snap5\t1492989587\n"}
+	commandArguments = []string{"-e", "-n", `playground/fs1@snap1\t1492989570
+playground/fs1@snap2\t1492989572
+playground/fs1@snap3\t1492989573
+playground/fs1@snap4\t1492989574
+playground/fs1@snap5\t1492989587
+`}
 
 	conf := &conf.Config{
 		Plans: []conf.Plan{
@@ -271,7 +286,12 @@ keep latest 10
 func TestMainFull(t *testing.T) {
 	now = time.Unix(1492993419, 0)
 	commandName = "echo"
-	commandArguments = []string{"-e", "-n", "playground/fs1@snap1\t1492989570\nplayground/fs1@snap2\t1492989572\nplayground/fs1@snap3\t1492989573\nplayground/fs1@snap4\t1492989574\nplayground/fs1@snap5\t1492989587\n"}
+	commandArguments = []string{"-e", "-n", `playground/fs1@snap1\t1492989570
+playground/fs1@snap2\t1492989572
+playground/fs1@snap3\t1492989573
+playground/fs1@snap4\t1492989574
+playground/fs1@snap5\t1492989587
+`}
 	verbose = true
 	content := []byte(`
 plan buh {
