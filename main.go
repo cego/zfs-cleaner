@@ -38,7 +38,6 @@ var (
 
 	// Can be overridden when running tests.
 	stdout io.Writer = os.Stdout
-	stderr io.Writer = os.Stderr
 )
 
 func init() {
