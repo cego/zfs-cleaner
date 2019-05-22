@@ -128,7 +128,10 @@ func clean(cmd *cobra.Command, args []string) error {
 	}
 
 	// make sure to unlock :)
-	defer syscall.Flock(fd, syscall.LOCK_UN)
+	defer func() {
+		// We can ignore errors here, we're exiting anyway.
+		_ = syscall.Flock(fd, syscall.LOCK_UN)
+	}()
 
 	lists, err := processAll(now, conf)
 	if err != nil {
