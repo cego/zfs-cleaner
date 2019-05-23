@@ -75,7 +75,7 @@ func TestEnd(t *testing.T) {
 	p := &Plan{
 		Name:    "testplan",
 		Paths:   []string{"/"},
-		Periods: []Period{Period{Frequency: time.Second, Age: time.Hour}},
+		Periods: []Period{{Frequency: time.Second, Age: time.Hour}},
 	}
 
 	cases := []string{"}", "} # comment", "  } "}
@@ -102,7 +102,7 @@ func TestEndError(t *testing.T) {
 	p := &Plan{
 		Name:    "testplan",
 		conf:    c,
-		Periods: []Period{Period{Frequency: time.Second, Age: time.Hour}},
+		Periods: []Period{{Frequency: time.Second, Age: time.Hour}},
 	}
 
 	cases := []string{"}", "} # comment", "  } "}

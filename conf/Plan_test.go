@@ -65,7 +65,14 @@ func TestKeepError(t *testing.T) {
 		conf: c,
 	}
 
-	cases := []string{"keep -1d for 30d", "keep 1d for -30d", "keep -1d for -30d", "keep # comment", "keep 1d for 1s", "keep }"}
+	cases := []string{
+		"keep -1d for 30d",
+		"keep 1d for -30d",
+		"keep -1d for -30d",
+		"keep # comment",
+		"keep 1d for 1s",
+		"keep }",
+	}
 	for i, cc := range cases {
 		s.scanner = bufio.NewScanner(strings.NewReader(cc))
 		s.scanLine()

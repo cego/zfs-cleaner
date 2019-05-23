@@ -15,16 +15,25 @@ func init() {
 
 	// Mute normal output when running tests.
 	stdout = ioutil.Discard
-	stderr = ioutil.Discard
 	rootCmd.SilenceUsage = true
 	rootCmd.SilenceErrors = true
 }
 
+const (
+	echoCommand = "echo"
+	failCommand = "false"
+)
+
 func TestGetList(t *testing.T) {
 	// We override the zfs command in tests, to avoid running the real zfs
 	// binary.
-	commandName = "echo"
-	commandArguments = []string{"-e", "-n", "playground/fs1@snap1\t1492989570\nplayground/fs1@snap2\t1492989572\nplayground/fs1@snap3\t1492989573\nplayground/fs1@snap4\t1492989574\nplayground/fs1@snap5\t1492989587\n"}
+	commandName = echoCommand
+	commandArguments = []string{"-e", "-n", `playground/fs1@snap1\t1492989570
+playground/fs1@snap2\t1492989572
+playground/fs1@snap3\t1492989573
+playground/fs1@snap4\t1492989574
+playground/fs1@snap5\t1492989587
+`}
 
 	list, err := getList("playground/fs1")
 	if err != nil {
@@ -50,7 +59,7 @@ func TestGetListMissingBinary(t *testing.T) {
 }
 
 func TestGetListError(t *testing.T) {
-	commandName = "false"
+	commandName = failCommand
 
 	list, err := getList("/pool/fs1")
 	if err == nil {
@@ -65,12 +74,12 @@ func TestGetListError(t *testing.T) {
 func TestReadConf(t *testing.T) {
 	expected := &conf.Config{
 		Plans: []conf.Plan{
-			conf.Plan{
+			{
 				Name:   "buh",
 				Paths:  []string{"/buh"},
 				Latest: 10,
 				Periods: []conf.Period{
-					conf.Period{
+					{
 						Frequency: 24 * time.Hour,
 						Age:       30 * 24 * time.Hour,
 					},
@@ -98,7 +107,7 @@ keep latest 10
 	}
 
 	defer tmpfile.Close()
-	tmpfile.Seek(0, 0)
+	_, _ = tmpfile.Seek(0, 0)
 
 	conf, err := readConf(tmpfile)
 	if err != nil {
@@ -135,7 +144,7 @@ func TestReadConfSyntaxError(t *testing.T) {
 	}
 
 	defer tmpfile.Close()
-	tmpfile.Seek(0, 0)
+	_, _ = tmpfile.Seek(0, 0)
 
 	conf, err := readConf(tmpfile)
 	if err == nil {
@@ -148,17 +157,22 @@ func TestReadConfSyntaxError(t *testing.T) {
 }
 
 func TestProcessAll(t *testing.T) {
-	commandName = "echo"
-	commandArguments = []string{"-e", "-n", "playground/fs1@snap1\t1492989570\nplayground/fs1@snap2\t1492989572\nplayground/fs1@snap3\t1492989573\nplayground/fs1@snap4\t1492989574\nplayground/fs1@snap5\t1492989587\n"}
+	commandName = echoCommand
+	commandArguments = []string{"-e", "-n", `playground/fs1@snap1\t1492989570
+playground/fs1@snap2\t1492989572
+playground/fs1@snap3\t1492989573
+playground/fs1@snap4\t1492989574
+playground/fs1@snap5\t1492989587
+`}
 
 	conf := &conf.Config{
 		Plans: []conf.Plan{
-			conf.Plan{
+			{
 				Name:   "buh",
 				Paths:  []string{"playground/fs1"},
 				Latest: 10,
 				Periods: []conf.Period{
-					conf.Period{
+					{
 						Frequency: 24 * time.Hour,
 						Age:       30 * 24 * time.Hour,
 					},
@@ -182,17 +196,22 @@ func TestProcessAll(t *testing.T) {
 }
 
 func TestProcessAllFail(t *testing.T) {
-	commandName = "false"
-	commandArguments = []string{"-e", "-n", "playground/fs1@snap1\t1492989570\nplayground/fs1@snap2\t1492989572\nplayground/fs1@snap3\t1492989573\nplayground/fs1@snap4\t1492989574\nplayground/fs1@snap5\t1492989587\n"}
+	commandName = failCommand
+	commandArguments = []string{"-e", "-n", `playground/fs1@snap1\t1492989570
+playground/fs1@snap2\t1492989572
+playground/fs1@snap3\t1492989573
+playground/fs1@snap4\t1492989574
+playground/fs1@snap5\t1492989587
+`}
 
 	conf := &conf.Config{
 		Plans: []conf.Plan{
-			conf.Plan{
+			{
 				Name:   "buh",
 				Paths:  []string{"playground/fs1"},
 				Latest: 10,
 				Periods: []conf.Period{
-					conf.Period{
+					{
 						Frequency: 24 * time.Hour,
 						Age:       30 * 24 * time.Hour,
 					},
@@ -234,7 +253,7 @@ func TestMainNoConfig(t *testing.T) {
 }
 
 func TestMainNoZFS(t *testing.T) {
-	commandName = "false"
+	commandName = failCommand
 
 	content := []byte(`
 plan buh {
@@ -271,8 +290,13 @@ keep latest 10
 
 func TestMainFull(t *testing.T) {
 	now = time.Unix(1492993419, 0)
-	commandName = "echo"
-	commandArguments = []string{"-e", "-n", "playground/fs1@snap1\t1492989570\nplayground/fs1@snap2\t1492989572\nplayground/fs1@snap3\t1492989573\nplayground/fs1@snap4\t1492989574\nplayground/fs1@snap5\t1492989587\n"}
+	commandName = echoCommand
+	commandArguments = []string{"-e", "-n", `playground/fs1@snap1\t1492989570
+playground/fs1@snap2\t1492989572
+playground/fs1@snap3\t1492989573
+playground/fs1@snap4\t1492989574
+playground/fs1@snap5\t1492989587
+`}
 	verbose = true
 	content := []byte(`
 plan buh {
@@ -313,14 +337,12 @@ func TestConcurrency(t *testing.T) {
 	// This will force clean() to wait for our mainWaitGroup.Done().
 	mainWaitGroup.Add(1)
 
+	var cleanErr error
 	go func() {
-		err := clean(nil, []string{tmpfile.Name()})
-		if err != nil {
-			t.Fatalf("clean() returned an error: %s", err.Error())
-		}
+		cleanErr = clean(nil, []string{tmpfile.Name()})
 	}()
 
-	// Give some time for the first clean() to aquire the lock.
+	// Give some time for the first clean() to acquire the lock.
 	time.Sleep(time.Millisecond * 100)
 
 	err := clean(nil, []string{tmpfile.Name()})
@@ -330,4 +352,8 @@ func TestConcurrency(t *testing.T) {
 
 	// Let the first clean() exit.
 	mainWaitGroup.Done()
+
+	if cleanErr != nil {
+		t.Fatalf("clean() returned an error: %s", cleanErr.Error())
+	}
 }

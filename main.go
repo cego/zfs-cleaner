@@ -38,7 +38,6 @@ var (
 
 	// Can be overridden when running tests.
 	stdout io.Writer = os.Stdout
-	stderr io.Writer = os.Stderr
 )
 
 func init() {
@@ -125,11 +124,14 @@ func clean(cmd *cobra.Command, args []string) error {
 	fd := int(confFile.Fd())
 	err = syscall.Flock(fd, syscall.LOCK_EX|syscall.LOCK_NB)
 	if err != nil {
-		return fmt.Errorf("Could not aquire lock on '%s'", confFile.Name())
+		return fmt.Errorf("could not aquire lock on '%s'", confFile.Name())
 	}
 
 	// make sure to unlock :)
-	defer syscall.Flock(fd, syscall.LOCK_UN)
+	defer func() {
+		// We can ignore errors here, we're exiting anyway.
+		_ = syscall.Flock(fd, syscall.LOCK_UN)
+	}()
 
 	lists, err := processAll(now, conf)
 	if err != nil {
