@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"os"
 	"reflect"
+	"sync"
 	"testing"
 	"time"
 
@@ -327,6 +328,7 @@ keep latest 1
 }
 
 func TestConcurrency(t *testing.T) {
+	var wg sync.WaitGroup
 	tmpfile, _ := ioutil.TempFile("/dev/shm", "test.TestReadConfSyntaxError")
 	defer os.Remove(tmpfile.Name())
 
@@ -337,9 +339,11 @@ func TestConcurrency(t *testing.T) {
 	// This will force clean() to wait for our mainWaitGroup.Done().
 	mainWaitGroup.Add(1)
 
+	wg.Add(1)
 	var cleanErr error
 	go func() {
 		cleanErr = clean(nil, []string{tmpfile.Name()})
+		wg.Done()
 	}()
 
 	// Give some time for the first clean() to acquire the lock.
@@ -352,6 +356,8 @@ func TestConcurrency(t *testing.T) {
 
 	// Let the first clean() exit.
 	mainWaitGroup.Done()
+
+	wg.Wait()
 
 	if cleanErr != nil {
 		t.Fatalf("clean() returned an error: %s", cleanErr.Error())
