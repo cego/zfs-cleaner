@@ -46,15 +46,14 @@ func init() {
 	rootCmd.TraverseChildren = true
 }
 
-func getList(name string) (zfs.SnapshotList, error) {
-	// Output could be cached.
+func getList() ([]byte, error) {
 	output, err := exec.Command(commandName, commandArguments...).Output()
 
 	if err != nil {
 		return nil, err
 	}
 
-	return zfs.NewSnapshotListFromOutput(output, name)
+	return output, nil
 }
 
 func readConf(r *os.File) (*conf.Config, error) {
@@ -69,10 +68,15 @@ func readConf(r *os.File) (*conf.Config, error) {
 }
 
 func processAll(now time.Time, conf *conf.Config) ([]zfs.SnapshotList, error) {
+	list, err := getList()
+	if err != nil {
+		return nil, err
+	}
+
 	lists := []zfs.SnapshotList{}
 	for _, plan := range conf.Plans {
 		for _, path := range plan.Paths {
-			list, err := getList(path)
+			list, err := zfs.NewSnapshotListFromOutput(list, path)
 			if err != nil {
 				return nil, err
 			}

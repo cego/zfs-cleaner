@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"os"
 	"reflect"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -36,20 +37,22 @@ playground/fs1@snap4\t1492989574
 playground/fs1@snap5\t1492989587
 `}
 
-	list, err := getList("playground/fs1")
+	list, err := getList()
 	if err != nil {
 		t.Fatalf("getList() returned error: %s", err.Error())
 	}
 
-	if len(list) != 5 {
-		t.Fatalf("getList() returned wrong number of snapshots, got %d, expected 5", len(list))
+	numLines := strings.Count(string(list), "\n")
+
+	if numLines != 5 {
+		t.Fatalf("getList() returned wrong number of snapshots, got %d, expected 5", numLines)
 	}
 }
 
 func TestGetListMissingBinary(t *testing.T) {
 	commandName = "/non/existing-zfs-command"
 
-	list, err := getList("/pool/fs1")
+	list, err := getList()
 	if err == nil {
 		t.Fatalf("getList() failed to error on non-existing ZFS binary")
 	}
@@ -62,7 +65,7 @@ func TestGetListMissingBinary(t *testing.T) {
 func TestGetListError(t *testing.T) {
 	commandName = failCommand
 
-	list, err := getList("/pool/fs1")
+	list, err := getList()
 	if err == nil {
 		t.Fatalf("getList() failed to error on ZFS binary returning 1")
 	}
