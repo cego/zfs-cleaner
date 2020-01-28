@@ -43,9 +43,10 @@ playground/fs1@snap5\t1492989587
 	}
 
 	numLines := strings.Count(string(list), "\n")
+	expected := strings.Count(commandArguments[2], "\n")
 
-	if numLines != 5 {
-		t.Fatalf("getList() returned wrong number of snapshots, got %d, expected 5", numLines)
+	if numLines != expected {
+		t.Fatalf("getList() returned wrong number of snapshots, got %d, expected %d", numLines, expected)
 	}
 }
 
