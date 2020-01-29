@@ -1,3 +1,9 @@
+zfs-cleaner (0.5alpha-1) any; urgency=low
+
+  * Only run zfs list once.
+
+ -- Anders Brander <abk@cego.dk>  Wed, 29 Jan 2020 10:27:38 +0000
+
 zfs-cleaner (0.4alpha-1) any; urgency=low
 
   * Added protect keyword.
