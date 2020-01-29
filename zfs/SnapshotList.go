@@ -14,16 +14,11 @@ type (
 	SnapshotList []*Snapshot
 )
 
-// NewShapshotList will create a new SnapshotList.
-func NewShapshotList() (SnapshotList, error) {
-	return SnapshotList{}, nil
-}
-
 // NewSnapshotListFromOutput will create a new SnapshotList from the output of
 // "zfs list -t snapshot -o name,creation -s creation -H -p".
 func NewSnapshotListFromOutput(output []byte, name string) (SnapshotList, error) {
-	list, _ := NewShapshotList()
-	var lastCreation time.Time
+	list := SnapshotList{}
+	lastCreation := time.Time{}
 
 	scanner := bufio.NewScanner(bytes.NewReader(output))
 	for scanner.Scan() {

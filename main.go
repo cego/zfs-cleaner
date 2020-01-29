@@ -74,6 +74,7 @@ func processAll(now time.Time, conf *conf.Config) ([]zfs.SnapshotList, error) {
 	}
 
 	lists := []zfs.SnapshotList{}
+
 	for _, plan := range conf.Plans {
 		for _, path := range plan.Paths {
 			list, err := zfs.NewSnapshotListFromOutput(list, path)
@@ -82,8 +83,8 @@ func processAll(now time.Time, conf *conf.Config) ([]zfs.SnapshotList, error) {
 			}
 
 			list.KeepNamed(plan.Protect)
-
 			list.KeepLatest(plan.Latest)
+
 			for _, period := range plan.Periods {
 				start := now.Add(-period.Age)
 
@@ -126,9 +127,10 @@ func clean(cmd *cobra.Command, args []string) error {
 	}
 
 	fd := int(confFile.Fd())
+
 	err = syscall.Flock(fd, syscall.LOCK_EX|syscall.LOCK_NB)
 	if err != nil {
-		return fmt.Errorf("could not aquire lock on '%s'", confFile.Name())
+		return fmt.Errorf("could not acquire lock on '%s'", confFile.Name())
 	}
 
 	// make sure to unlock :)

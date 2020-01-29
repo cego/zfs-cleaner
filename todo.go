@@ -40,7 +40,7 @@ func (t *todo) Do() error {
 	}
 
 	if !dryrun && t.command != "" {
-		output, err := exec.Command(t.command, t.args...).Output()
+		output, err := exec.Command(t.command, t.args...).Output() //nolint:gosec
 
 		fmt.Fprintf(stdout, "%s", string(output))
 

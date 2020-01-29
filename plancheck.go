@@ -38,12 +38,14 @@ var plancheckCmd = &cobra.Command{
 
 func planCheck(conf *conf.Config) error {
 	args := []string{"list", "-t", "filesystem", "-o", "name", "-H"}
+
 	output, err := exec.Command(commandName, args...).Output()
 	if err != nil {
 		return err
 	}
 
 	m := map[string]bool{}
+
 	for _, plan := range conf.Plans {
 		for _, path := range plan.Paths {
 			m[path] = true

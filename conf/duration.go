@@ -21,12 +21,14 @@ func parseDuration(input string) (time.Duration, error) {
 	}
 
 	var t time.Duration
+
 	if len(input) < 2 {
 		return t, ErrDurationTooShort
 	}
 
 	unitIdentifier := input[len(input)-1:]
 	unitSize, found := units[unitIdentifier]
+
 	if !found {
 		return t, ErrUnknownUnit
 	}
