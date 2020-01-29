@@ -61,12 +61,14 @@ func (p *Plan) keep(s *state) action {
 	}
 
 	var frequency time.Duration
+
 	frequency, s.err = parseDuration(s.fields[1])
 	if s.err != nil {
 		return nil
 	}
 
 	var age time.Duration
+
 	age, s.err = parseDuration(s.fields[3])
 	if s.err != nil {
 		return nil

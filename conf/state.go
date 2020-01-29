@@ -44,6 +44,7 @@ func (s *state) scanLine() bool {
 	for s.scanner.Scan() {
 		line := s.scanner.Text()
 		line = trim(line)
+
 		if line != "" {
 			s.fields = strings.Fields(line)
 			return true
