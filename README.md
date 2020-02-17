@@ -55,7 +55,7 @@ A plan is defined like this:
         path pool/dataset3
 
         keep latest 10
-        protect </etc/zfs-cleaner.protected
+        protect /etc/zfs-cleaner.protected
     }
 
     plan planC {
