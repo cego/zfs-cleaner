@@ -15,8 +15,9 @@ import (
 )
 
 var (
-	verbose = false
-	dryrun  = false
+	verbose     = false
+	dryrun      = false
+	showVersion = false
 
 	commandName      = "/sbin/zfs"
 	commandArguments = []string{"list", "-t", "snapshot", "-o", "name,creation", "-s", "creation", "-r", "-H", "-p"}
@@ -43,6 +44,7 @@ var (
 func init() {
 	rootCmd.PersistentFlags().BoolVarP(&dryrun, "dryrun", "n", false, "Do nothing destructive, only print")
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Be more verbose")
+	rootCmd.PersistentFlags().BoolVarP(&showVersion, "version", "V", false, "Show version and exit")
 	rootCmd.TraverseChildren = true
 }
 
@@ -111,6 +113,10 @@ func main() {
 }
 
 func clean(cmd *cobra.Command, args []string) error {
+	if showVersion {
+		printVersion()
+	}
+
 	if len(args) != 1 {
 		return fmt.Errorf("%s /path/to/config.conf", cmd.Name())
 	}
