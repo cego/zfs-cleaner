@@ -1,3 +1,10 @@
+zfs-cleaner (0.6alpha-1) any; urgency=low
+
+  * Add --ignore-empty to plancheck
+  * Add version command
+
+ -- Anders Brander <abk@cego.dk>  Thu, 01 Oct 2020 13:17:38 +0000
+
 zfs-cleaner (0.5alpha-1) any; urgency=low
 
   * Only run zfs list once.
