@@ -8,7 +8,7 @@ deb: zfs-cleaner
 	dpkg-buildpackage -uc -us
 
 test:
-	go test ./... -cover
+	go test ./... -race -cover
 
 lint:
 	golangci-lint run
