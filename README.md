@@ -101,3 +101,4 @@ A few flags are provided as well.
 |-------|----------------|-------------------------------------------------------------------------------------------|
 | `-n`  | `--dryrun`     | Do nothing, print what could have been done.                                              |
 | `-v`  | `--verbose`    | Do everything, print what's done.                                                         |
+| `-V`  | `--version`    | SHow version and exit (can be used with -v)                                               |
