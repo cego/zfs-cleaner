@@ -5,6 +5,7 @@ const (
 	keepIdentifier    = "keep"
 	pathIdentifier    = "path"
 	protectIdentifier = "protect"
+	includeIdentifier = "include"
 )
 
 const (

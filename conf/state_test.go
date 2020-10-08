@@ -124,3 +124,43 @@ func TestEndError(t *testing.T) {
 		p.Paths = []string{"/"}
 	}
 }
+
+func TestIncludeFile(t *testing.T) {
+	s := &state{}
+
+	cases := []string{
+		"include /dev/null", // empty file
+	}
+
+	for _, cc := range cases {
+		s.scanner = bufio.NewScanner(strings.NewReader(cc))
+		s.scanLine()
+
+		if s.err != nil {
+			t.Errorf("Failed errored on %s", cc)
+		}
+
+		s.err = nil
+	}
+}
+
+func TestIncludeFileError(t *testing.T) {
+	s := &state{}
+
+	cases := []string{
+		"include /does-not-exists-we-hope", // non existing file
+		"include /dev",                     // directory
+		"include /etc/shadow",              // insufficient permissions
+	}
+
+	for _, cc := range cases {
+		s.scanner = bufio.NewScanner(strings.NewReader(cc))
+		s.scanLine()
+
+		if s.err == nil {
+			t.Errorf("Failed to err on %s", cc)
+		}
+
+		s.err = nil
+	}
+}

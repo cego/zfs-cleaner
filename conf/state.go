@@ -2,7 +2,11 @@ package conf
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
+	"io"
+	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -16,6 +20,8 @@ type (
 		scanner *bufio.Scanner
 		fields  []string
 		err     error
+
+		previous []*bufio.Scanner
 	}
 )
 
@@ -47,15 +53,70 @@ func (s *state) scanLine() bool {
 
 		if line != "" {
 			s.fields = strings.Fields(line)
+
+			if s.fields[0] == includeIdentifier {
+				return s.include()
+			}
+
 			return true
 		}
+	}
+
+	if len(s.previous) > 0 {
+		s.scanner = s.previous[0]
+		s.previous = s.previous[1:]
+
+		return s.scanLine()
 	}
 
 	return false
 }
 
+func (s *state) include() bool {
+	// This will never err on Unix. Ignore errors.
+	paths, _ := filepath.Glob(s.fields[1])
+
+	if len(paths) == 0 {
+		s.error(Error(fmt.Sprintf("'%s' matches nothing", s.fields[1])))
+
+		return false
+	}
+
+	buffer := bytes.NewBuffer(nil)
+
+	for _, path := range paths {
+		f, err := os.Open(path)
+		if err != nil {
+			s.error(err)
+
+			return false
+		}
+
+		_, err = io.Copy(buffer, f)
+		if err != nil {
+			s.error(err)
+
+			return false
+		}
+
+		_ = f.Close()
+
+		// Make sure we separate files by newlines in case an
+		// included file does not end with newline.
+		buffer.WriteString("\n")
+	}
+
+	s.previous = append([]*bufio.Scanner{s.scanner}, s.previous...)
+	s.scanner = bufio.NewScanner(buffer)
+
+	return s.scanLine()
+}
+
 func (s *state) error(err error) action {
-	s.err = err
+	// We only preserve the first error to avoid showing cascading errors.
+	if s.err == nil {
+		s.err = err
+	}
 
 	return nil
 }
