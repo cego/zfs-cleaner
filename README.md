@@ -77,6 +77,21 @@ destroy any snapshot name read from `/etc/zfs-cleaner.protected`.
 
 Path must refer to one of the results from `sudo zfs list -t filesystem -o name`.
 
+#### Including configuration files
+
+A configuration file can include other configuration files using the `include `keyword.
+
+    plan planC {
+        path pool/dataset
+
+        keep 0s for 1h
+        include common.conf
+    }
+
+    include /etc/zfs-cleaner.d/*.conf
+
+`include` is interpreted as a Bash-style glob.
+
 ### Units
 
 All periods consits of a positive integer and a unit. A special case is `0s`
