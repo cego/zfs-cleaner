@@ -113,8 +113,6 @@ func main() {
 }
 
 func clean(cmd *cobra.Command, args []string) error {
-	configPath := args[0]
-
 	if showVersion {
 		printVersion()
 	}
@@ -122,6 +120,8 @@ func clean(cmd *cobra.Command, args []string) error {
 	if len(args) != 1 {
 		return fmt.Errorf("%s /path/to/config.conf", cmd.Name())
 	}
+
+	configPath := args[0]
 
 	confFile, err := os.Open(configPath)
 	if err != nil {
