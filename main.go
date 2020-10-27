@@ -156,7 +156,7 @@ func clean(cmd *cobra.Command, args []string) error {
 	for _, list := range lists {
 		for _, snapshot := range list {
 			if !snapshot.Keep {
-				todos = append(todos, newDestroy(snapshot.Name))
+				todos = append(todos, newDestroy(snapshot))
 			} else {
 				todos = append(todos, newComment("Keep %s (Age %s)", snapshot.Name, now.Sub(snapshot.Creation)))
 			}

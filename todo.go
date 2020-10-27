@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/cego/zfs-cleaner/zfs"
 	"os/exec"
 	"strings"
 )
@@ -14,11 +15,11 @@ type (
 	}
 )
 
-func newDestroy(name string) todo {
+func newDestroy(snapshot *zfs.Snapshot) todo {
 	return todo{
-		comment: "Destroying " + name,
+		comment: fmt.Sprintf("Destroying %s (Age %s)", snapshot.Name, now.Sub(snapshot.Creation)),
 		command: commandName,
-		args:    []string{"destroy", name},
+		args:    []string{"destroy", snapshot.Name},
 	}
 }
 
