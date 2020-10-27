@@ -113,6 +113,8 @@ func main() {
 }
 
 func clean(cmd *cobra.Command, args []string) error {
+	configPath := args[0]
+
 	if showVersion {
 		printVersion()
 	}
@@ -121,7 +123,7 @@ func clean(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("%s /path/to/config.conf", cmd.Name())
 	}
 
-	confFile, err := os.Open(args[0])
+	confFile, err := os.Open(configPath)
 	if err != nil {
 		return fmt.Errorf("failed to open %s: %s", args[0], err.Error())
 	}
@@ -152,6 +154,14 @@ func clean(cmd *cobra.Command, args []string) error {
 
 	// Start by generating a list of stuff to do.
 	todos := []todo{}
+
+	// Print plan when verbose.
+	if verbose {
+		todos = append(todos, newComment("Config: '%s'", configPath))
+		for _, plan := range conf.Plans {
+			todos = append(todos, newComment("Plan: %+v", plan))
+		}
+	}
 
 	for _, list := range lists {
 		for _, snapshot := range list {
