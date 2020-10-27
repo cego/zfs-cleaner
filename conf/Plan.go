@@ -25,6 +25,7 @@ const (
 	ErrLatest1          = Error("latest must be at least 1")
 	ErrNoPaths          = Error("no paths defined")
 	ErrNoKeeps          = Error("no keep periods defined")
+	ErrProtectPath      = Error("protected snapshot name include path")
 )
 
 func (p *Plan) planLine(s *state) action {
@@ -161,6 +162,12 @@ func (p *Plan) end(s *state) action {
 
 	if len(p.Periods) == 0 && p.Latest == 0 {
 		return s.error(ErrNoKeeps)
+	}
+
+	for _, protect := range p.Protect {
+		if strings.ContainsRune(protect, '@') {
+			return s.error(ErrProtectPath)
+		}
 	}
 
 	c := p.conf
