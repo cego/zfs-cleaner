@@ -226,27 +226,32 @@ func TestSieve(t *testing.T) {
 			true, true, true, true, true,
 			true, true, true, true, true,
 			false, true, true, true, true,
-			true, true}},
+			true, true,
+		}},
 		{time.Unix(0, 0), 5 * time.Second, []bool{
 			true, true, true, true, true,
 			false, true, true, true, false,
 			false, true, true, false, true,
-			true, true}},
+			true, true,
+		}},
 		{time.Unix(0, 0), 10 * time.Second, []bool{
 			true, false, true, false, true,
 			false, false, true, false, false,
 			false, true, false, false, true,
-			false, true}},
+			false, true,
+		}},
 		{time.Unix(0, 0), 100 * time.Second, []bool{
 			true, false, false, false, false,
 			false, false, false, false, false,
 			false, false, false, false, false,
-			false, false}},
+			false, false,
+		}},
 		{time.Unix(0, 0), 100000000 * time.Second, []bool{
 			true, false, false, false, false,
 			false, false, false, false, false,
 			false, false, false, false, false,
-			false, false}},
+			false, false,
+		}},
 	}
 
 	for i, c := range cases {

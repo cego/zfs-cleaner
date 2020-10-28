@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/cego/zfs-cleaner/zfs"
 	"os/exec"
 	"strings"
+
+	"github.com/cego/zfs-cleaner/zfs"
 )
 
 type (

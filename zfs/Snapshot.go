@@ -17,10 +17,8 @@ type (
 	}
 )
 
-var (
-	// ErrMalformedLine will be returned if output from zfs is unusable.
-	ErrMalformedLine = errors.New("broken line")
-)
+// ErrMalformedLine will be returned if output from zfs is unusable.
+var ErrMalformedLine = errors.New("broken line")
 
 // NewSnapshotFromLine will try to parse a line from "zfs list" and instantiate
 // a new Snapshot.

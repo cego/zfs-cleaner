@@ -50,7 +50,6 @@ func init() {
 
 func getList() ([]byte, error) {
 	output, err := exec.Command(commandName, commandArguments...).Output()
-
 	if err != nil {
 		return nil, err
 	}
