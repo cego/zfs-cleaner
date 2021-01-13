@@ -3,52 +3,61 @@ package main
 import (
 	"fmt"
 	"github.com/cego/zfs-cleaner/zfs"
-	"os/exec"
-	"strings"
 )
 
-type (
-	todo struct {
-		comment string
-		command string
-		args    []string
-	}
+type todo interface {
+	Do() error
+}
+
+var (
+	_ todo = (*destroySnapshot)(nil)
+	_ todo = (*noop)(nil)
 )
 
-func newDestroy(snapshot *zfs.Snapshot) todo {
-	return todo{
-		comment: fmt.Sprintf("Destroying %s (Age %s)", snapshot.Name, now.Sub(snapshot.Creation)),
-		command: commandName,
-		args:    []string{"destroy", snapshot.Name},
+type destroySnapshot struct {
+	comment     string
+	zfsExecutor zfs.Executor
+	snapshot    *zfs.Snapshot
+}
+
+type noop struct {
+	comment string
+}
+
+func newDestroy(zfsExecutor zfs.Executor, snapshot *zfs.Snapshot) todo {
+	return &destroySnapshot{
+		comment:     fmt.Sprintf("Destroying %s (Age %s)", snapshot.Name, now.Sub(snapshot.Creation)),
+		zfsExecutor: zfsExecutor,
+		snapshot:    snapshot,
 	}
 }
 
-func newComment(format string, args ...interface{}) todo {
-	return todo{
-		comment: fmt.Sprintf(format, args...),
-		command: "",
-		args:    nil,
+func (d *destroySnapshot) Do() error {
+	if verbose {
+		_, _ = fmt.Fprintf(stdout, "### %s\n", d.comment)
 	}
-}
-
-func (t *todo) Do() error {
-	if verbose && t.comment != "" {
-		fmt.Fprintf(stdout, "### %s\n", t.comment)
+	if verbose || dryrun {
+		_, _ = fmt.Fprintf(stdout, "# Running 'zfs destroy %s'\n", d.snapshot.Name)
 	}
-
-	if (verbose || dryrun) && t.command != "" {
-		fmt.Fprintf(stdout, "# Running '%s %s'\n", t.command, strings.Join(t.args, " "))
-	}
-
-	if !dryrun && t.command != "" {
-		output, err := exec.Command(t.command, t.args...).Output() //nolint:gosec
-
-		fmt.Fprintf(stdout, "%s", string(output))
-
+	if !dryrun {
+		output, err := d.zfsExecutor.DestroySnapshot(d.snapshot.Name)
 		if err != nil {
 			return err
 		}
+		_, _ = fmt.Fprintf(stdout, "%s", string(output))
 	}
+	return nil
+}
 
+func newComment(format string, args ...interface{}) todo {
+	return &noop{
+		comment: fmt.Sprintf(format, args...),
+	}
+}
+
+func (d *noop) Do() error {
+	if verbose {
+		_, _ = fmt.Fprintf(stdout, "### %s\n", d.comment)
+	}
 	return nil
 }

@@ -1,10 +1,11 @@
 package main
 
 import (
+	"errors"
+	"github.com/cego/zfs-cleaner/zfs"
 	"io/ioutil"
 	"os"
 	"reflect"
-	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -19,61 +20,6 @@ func init() {
 	stdout = ioutil.Discard
 	rootCmd.SilenceUsage = true
 	rootCmd.SilenceErrors = true
-}
-
-const (
-	echoCommand = "echo"
-	failCommand = "false"
-)
-
-func TestGetList(t *testing.T) {
-	// We override the zfs command in tests, to avoid running the real zfs
-	// binary.
-	commandName = echoCommand
-	commandArguments = []string{"-e", "-n", `playground/fs1@snap1\t1492989570
-playground/fs1@snap2\t1492989572
-playground/fs1@snap3\t1492989573
-playground/fs1@snap4\t1492989574
-playground/fs1@snap5\t1492989587
-`}
-
-	list, err := getList()
-	if err != nil {
-		t.Fatalf("getList() returned error: %s", err.Error())
-	}
-
-	numLines := strings.Count(string(list), "\n")
-	expected := strings.Count(commandArguments[2], "\n")
-
-	if numLines != expected {
-		t.Fatalf("getList() returned wrong number of snapshots, got %d, expected %d", numLines, expected)
-	}
-}
-
-func TestGetListMissingBinary(t *testing.T) {
-	commandName = "/non/existing-zfs-command"
-
-	list, err := getList()
-	if err == nil {
-		t.Fatalf("getList() failed to error on non-existing ZFS binary")
-	}
-
-	if list != nil {
-		t.Fatalf("getList() non-nil list for error")
-	}
-}
-
-func TestGetListError(t *testing.T) {
-	commandName = failCommand
-
-	list, err := getList()
-	if err == nil {
-		t.Fatalf("getList() failed to error on ZFS binary returning 1")
-	}
-
-	if list != nil {
-		t.Fatalf("getList() non-nil list for error")
-	}
 }
 
 func TestReadConf(t *testing.T) {
@@ -114,17 +60,17 @@ keep latest 10
 	defer tmpfile.Close()
 	_, _ = tmpfile.Seek(0, 0)
 
-	conf, err := readConf(tmpfile)
+	conf, err := readConfig(tmpfile)
 	if err != nil {
-		t.Errorf("readConf() failed: %s", err.Error())
+		t.Errorf("readConfig() failed: %s", err.Error())
 	}
 
 	if conf == nil {
-		t.Errorf("readConf() did not return a config")
+		t.Errorf("readConfig() did not return a config")
 	}
 
 	if !reflect.DeepEqual(conf, expected) {
-		t.Errorf("readConf() did not return expected config")
+		t.Errorf("readConfig() did not return expected config")
 	}
 }
 
@@ -151,7 +97,7 @@ func TestReadConfSyntaxError(t *testing.T) {
 	defer tmpfile.Close()
 	_, _ = tmpfile.Seek(0, 0)
 
-	conf, err := readConf(tmpfile)
+	conf, err := readConfig(tmpfile)
 	if err == nil {
 		t.Errorf("Failed to return error for broken config file")
 	}
@@ -161,14 +107,39 @@ func TestReadConfSyntaxError(t *testing.T) {
 	}
 }
 
+var _ zfs.Executor = (*testExecutor)(nil)
+
+type testExecutor struct {
+	zfsCommandName        string
+	getSnapshotListResult []byte
+	getSnapshotListError  error
+}
+
+func (t *testExecutor) GetSnapshotList(dataset string) ([]byte, error) {
+	return t.getSnapshotListResult, t.getSnapshotListError
+}
+
+func (t *testExecutor) GetFilesystems() ([]byte, error) {
+	panic("implement me")
+}
+
+func (t *testExecutor) HasSnapshot(dataset string) (bool, error) {
+	panic("implement me")
+}
+
+func (t *testExecutor) DestroySnapshot(dataset string) ([]byte, error) {
+	return nil, nil
+}
+
 func TestProcessAll(t *testing.T) {
-	commandName = echoCommand
-	commandArguments = []string{"-e", "-n", `playground/fs1@snap1\t1492989570
-playground/fs1@snap2\t1492989572
-playground/fs1@snap3\t1492989573
-playground/fs1@snap4\t1492989574
-playground/fs1@snap5\t1492989587
-`}
+	zfsTestExecutor := testExecutor{
+		getSnapshotListResult: []byte(`playground/fs1@snap1	1492989570
+playground/fs1@snap2	1492989572
+playground/fs1@snap3	1492989573
+playground/fs1@snap4	1492989574
+playground/fs1@snap5	1492989587
+`),
+	}
 
 	conf := &conf.Config{
 		Plans: []conf.Plan{
@@ -186,7 +157,7 @@ playground/fs1@snap5\t1492989587
 		},
 	}
 
-	lists, err := processAll(time.Now(), conf)
+	lists, err := processAll(time.Now(), conf, &zfsTestExecutor)
 	if err != nil {
 		t.Errorf("processAll() returned error: %s", err.Error())
 	}
@@ -201,13 +172,9 @@ playground/fs1@snap5\t1492989587
 }
 
 func TestProcessAllFail(t *testing.T) {
-	commandName = failCommand
-	commandArguments = []string{"-e", "-n", `playground/fs1@snap1\t1492989570
-playground/fs1@snap2\t1492989572
-playground/fs1@snap3\t1492989573
-playground/fs1@snap4\t1492989574
-playground/fs1@snap5\t1492989587
-`}
+	zfsTestExecutor := testExecutor{
+		getSnapshotListError: errors.New("test fail"),
+	}
 
 	conf := &conf.Config{
 		Plans: []conf.Plan{
@@ -225,7 +192,7 @@ playground/fs1@snap5\t1492989587
 		},
 	}
 
-	lists, err := processAll(time.Now(), conf)
+	lists, err := processAll(time.Now(), conf, &zfsTestExecutor)
 	if err == nil {
 		t.Errorf("processAll() did not return error")
 	}
@@ -258,8 +225,6 @@ func TestMainNoConfig(t *testing.T) {
 }
 
 func TestMainNoZFS(t *testing.T) {
-	commandName = failCommand
-
 	content := []byte(`
 plan buh {
 path /buh
@@ -289,19 +254,11 @@ keep latest 10
 			t.Errorf("The code did not panic for no arguments")
 		}
 	}()
-
 	main()
 }
 
 func TestMainFull(t *testing.T) {
 	now = time.Unix(1492993419, 0)
-	commandName = echoCommand
-	commandArguments = []string{"-e", "-n", `playground/fs1@snap1\t1492989570
-playground/fs1@snap2\t1492989572
-playground/fs1@snap3\t1492989573
-playground/fs1@snap4\t1492989574
-playground/fs1@snap5\t1492989587
-`}
 	verbose = true
 	content := []byte(`
 plan buh {
@@ -328,6 +285,14 @@ keep latest 1
 
 	os.Args = []string{os.Args[0], tmpfile.Name()}
 
+	zfsExecutor = &testExecutor{
+		getSnapshotListResult: []byte(`playground/fs1@snap1	1492989570
+playground/fs1@snap2	1492989572
+playground/fs1@snap3	1492989573
+playground/fs1@snap4	1492989574
+playground/fs1@snap5	1492989587
+`),
+	}
 	main()
 }
 
