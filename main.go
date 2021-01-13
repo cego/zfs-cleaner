@@ -78,7 +78,7 @@ func main() {
 		if panicBail {
 			panic(err.Error())
 		}
-		_, _ = fmt.Fprintf(os.Stderr, "%s\n", err.Error())
+		fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 		os.Exit(1)
 	}
 }

@@ -34,17 +34,17 @@ func newDestroy(zfsExecutor zfs.Executor, snapshot *zfs.Snapshot) todo {
 
 func (d *destroySnapshot) Do() error {
 	if verbose {
-		_, _ = fmt.Fprintf(stdout, "### %s\n", d.comment)
+		fmt.Fprintf(stdout, "### %s\n", d.comment)
 	}
 	if verbose || dryrun {
-		_, _ = fmt.Fprintf(stdout, "# Running 'zfs destroy %s'\n", d.snapshot.Name)
+		fmt.Fprintf(stdout, "# Running 'zfs destroy %s'\n", d.snapshot.Name)
 	}
 	if !dryrun {
 		output, err := d.zfsExecutor.DestroySnapshot(d.snapshot.Name)
 		if err != nil {
 			return err
 		}
-		_, _ = fmt.Fprintf(stdout, "%s", string(output))
+		fmt.Fprintf(stdout, "%s", string(output))
 	}
 	return nil
 }
@@ -57,7 +57,7 @@ func newComment(format string, args ...interface{}) todo {
 
 func (d *noop) Do() error {
 	if verbose {
-		_, _ = fmt.Fprintf(stdout, "### %s\n", d.comment)
+		fmt.Fprintf(stdout, "### %s\n", d.comment)
 	}
 	return nil
 }
