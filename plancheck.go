@@ -2,80 +2,65 @@ package main
 
 import (
 	"fmt"
+	"github.com/cego/zfs-cleaner/zfs"
 	"os"
-	"os/exec"
 	"strings"
 
 	"github.com/cego/zfs-cleaner/conf"
 	"github.com/spf13/cobra"
 )
 
-func init() {
+func AddPlanCheckCommand(zfsExecutor zfs.Executor) {
 	ignoreEmpty := false
-	plancheckCmd := &cobra.Command{
+	planCheckCmd := &cobra.Command{
 		Use:   "plancheck [config file]",
 		Short: "Print mounts that have no plan and exit",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {
-				return fmt.Errorf("%s /path/to/config.conf", cmd.Name())
+				return fmt.Errorf("%s /path/to/config.config", cmd.Name())
 			}
-
-			confFile, err := os.Open(args[0])
+			configFile, err := os.Open(args[0])
 			if err != nil {
 				return fmt.Errorf("failed to open %s: %s", args[0], err.Error())
 			}
-			defer confFile.Close()
-
-			conf, err := readConf(confFile)
+			defer configFile.Close()
+			config, err := readConfig(configFile)
 			if err != nil {
 				return err
 			}
-
-			return planCheck(conf, ignoreEmpty)
+			return planCheck(zfsExecutor, config, ignoreEmpty)
 		},
 	}
-	plancheckCmd.PersistentFlags().BoolVar(&ignoreEmpty, "ignore-empty", false, "Ignore file systems with no snapshots")
-
-	rootCmd.AddCommand(plancheckCmd)
+	planCheckCmd.PersistentFlags().BoolVar(&ignoreEmpty, "ignore-empty", false, "Ignore file systems with no snapshots")
+	rootCmd.AddCommand(planCheckCmd)
 }
 
-func hasSnapshots(path string) bool {
-	argsStr := fmt.Sprintf("list -t snapshot -o name %s -H -d 1", path)
-	args := strings.Fields(argsStr)
-
-	output, err := exec.Command(commandName, args...).Output()
+func hasSnapshots(zfsExecutor zfs.Executor, dataset string) bool {
+	hasSnapshot, err := zfsExecutor.HasSnapshot(dataset)
 	if err != nil {
 		return false
 	}
-
-	return len(output) > 0
+	return hasSnapshot
 }
 
-func planCheck(conf *conf.Config, ignoreEmpty bool) error {
-	args := []string{"list", "-t", "filesystem", "-o", "name", "-H"}
-
-	output, err := exec.Command(commandName, args...).Output()
+func planCheck(zfsExecutor zfs.Executor, conf *conf.Config, ignoreEmpty bool) error {
+	output, err := zfsExecutor.GetFilesystems()
 	if err != nil {
 		return err
 	}
-
 	m := map[string]bool{}
-
 	for _, plan := range conf.Plans {
 		for _, path := range plan.Paths {
 			m[path] = true
 		}
 	}
-
 	for _, store := range strings.Fields(string(output)) {
 		if !m[store] {
-			if ignoreEmpty && !hasSnapshots(store) {
+			if ignoreEmpty && !hasSnapshots(zfsExecutor, store) {
 				continue
 			}
-
 			fmt.Printf("No plan found for path: '%s'\n", store)
 		}
 	}
-
 	return nil
 }

@@ -12,6 +12,10 @@ var (
 	s3 = Snapshot{"s3", time.Unix(1491919188, 0), false}
 )
 
+const (
+	failCommand = "false"
+)
+
 func TestNewSnapshotFromLine(t *testing.T) {
 	cases := []struct {
 		input    string

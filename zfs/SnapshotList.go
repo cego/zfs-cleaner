@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"strings"
 	"time"
 )
 
@@ -14,32 +13,26 @@ type (
 	SnapshotList []*Snapshot
 )
 
-// NewSnapshotListFromOutput will create a new SnapshotList from the output of
-// "zfs list -t snapshot -o name,creation -s creation -H -p".
-func NewSnapshotListFromOutput(output []byte, name string) (SnapshotList, error) {
+// NewSnapshotListFromDataset will create a new SnapshotList from the output of the provided ZfsExecutor
+func (l SnapshotList) NewSnapshotListFromDataset(zfsExecutor Executor, dataset string) (SnapshotList, error) {
 	list := SnapshotList{}
 	lastCreation := time.Time{}
-
+	output, err := zfsExecutor.GetSnapshotList(dataset)
+	if err != nil {
+		return nil, err
+	}
 	scanner := bufio.NewScanner(bytes.NewReader(output))
 	for scanner.Scan() {
 		s, err := NewSnapshotFromLine(scanner.Text())
 		if err != nil {
 			return nil, err
 		}
-
-		if !strings.HasPrefix(s.Name, name+"@") {
-			continue
-		}
-
 		if lastCreation.Sub(s.Creation) > time.Second {
 			return nil, fmt.Errorf("output does not appear sorted. %d < %d", s.Creation.Unix(), lastCreation.Unix())
 		}
-
 		lastCreation = s.Creation
-
 		list = append(list, s)
 	}
-
 	return list, nil
 }
 
@@ -51,7 +44,6 @@ func (l SnapshotList) Next(from time.Time) *Snapshot {
 			return snapshot
 		}
 	}
-
 	return nil
 }
 
@@ -60,7 +52,6 @@ func (l SnapshotList) Oldest() *Snapshot {
 	if len(l) < 1 {
 		return nil
 	}
-
 	return l[0]
 }
 
@@ -69,7 +60,6 @@ func (l SnapshotList) Latest() *Snapshot {
 	if len(l) < 1 {
 		return nil
 	}
-
 	return l[len(l)-1]
 }
 
@@ -129,10 +119,8 @@ func (l SnapshotList) Sieve(start time.Time, frequency time.Duration) {
 				s.Keep = true
 			}
 		}
-
 		return
 	}
-
 	for s := l.Next(start); s != nil; s = l.Next(s.Creation.Add(frequency)) {
 		s.Keep = true
 	}
