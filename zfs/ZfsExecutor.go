@@ -1,7 +1,6 @@
 package zfs
 
 import (
-	"errors"
 	"fmt"
 	"os/exec"
 	"strings"
@@ -30,7 +29,7 @@ func (z *executorImpl) GetSnapshotList(dataset string) ([]byte, error) {
 	commandArguments := []string{"list", "-t", "snapshot", "-o", "name,creation", "-s", "creation", "-d", "1", "-H", "-p", "-r", dataset}
 	output, err := exec.Command(z.zfsCommandName, commandArguments...).Output()
 	if exitError, ok := err.(*exec.ExitError); ok {
-		return nil, errors.New(fmt.Sprintf("Failed to get snapshot list for dataset: %s error: %s", dataset, exitError.Stderr))
+		return nil, fmt.Errorf("failed to get snapshot list for dataset: %s error: %s", dataset, exitError.Stderr)
 	}
 	if err != nil {
 		return nil, err
@@ -42,7 +41,7 @@ func (z *executorImpl) GetFilesystems() ([]byte, error) {
 	commandArguments := []string{"list", "-t", "filesystem", "-o", "name", "-H"}
 	output, err := exec.Command(z.zfsCommandName, commandArguments...).Output()
 	if exitError, ok := err.(*exec.ExitError); ok {
-		return nil, errors.New(fmt.Sprintf("Failed to get filesystem list error: %s", exitError.Stderr))
+		return nil, fmt.Errorf("failed to get filesystem list error: %s", exitError.Stderr)
 	}
 	if err != nil {
 		return nil, err
@@ -55,7 +54,7 @@ func (z *executorImpl) HasSnapshot(dataset string) (bool, error) {
 	args := strings.Fields(argsStr)
 	output, err := exec.Command(z.zfsCommandName, args...).Output()
 	if exitError, ok := err.(*exec.ExitError); ok {
-		return false, errors.New(fmt.Sprintf("Failed to get snapshot list to see if it has snapshots for dataset: %s error: %s", dataset, exitError.Stderr))
+		return false, fmt.Errorf("failed to get snapshot list to see if it has snapshots for dataset: %s error: %s", dataset, exitError.Stderr)
 	}
 	if err != nil {
 		return false, err
@@ -66,7 +65,7 @@ func (z *executorImpl) HasSnapshot(dataset string) (bool, error) {
 func (z *executorImpl) DestroySnapshot(snapshot string) ([]byte, error) {
 	output, err := exec.Command(z.zfsCommandName, "destroy", snapshot).Output()
 	if exitError, ok := err.(*exec.ExitError); ok {
-		return output, errors.New(fmt.Sprintf("Failed to destroy snapshot: %s error: %s", snapshot, exitError.Stderr))
+		return output, fmt.Errorf("failed to destroy snapshot: %s error: %s", snapshot, exitError.Stderr)
 	}
 	if err != nil {
 		return nil, err
