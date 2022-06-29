@@ -121,6 +121,36 @@ func (l SnapshotList) Sieve(start time.Time, frequency time.Duration) {
 		}
 		return
 	}
+
+	// We move start back to a point in time where it will "snap" to a
+	// frequency based on some predefined reference time in the past.
+	// We do this to make zfs-cleaner more resilient to the execution start
+	// time of zfs-cleaner itself.
+	// Imagine we have two ZFS servers synchronizing snapshots. If they both
+	// run zfs-cleaner, they could easily diverge on what snapshots to keep,
+	// and which to delete based on execution time.
+	// This trick should make sure that we're consistent about what to
+	// delete and what to destroy since ZFS snapshots maintain the creation-
+	// time across pools.
+	// Please note that zfs-cleaner run should happen at roughly the same
+	// time on all hosts. As long as zfs-cleaners runs more often than the
+	// keep frequency, the result should be predictable.
+	// If you have a planline like "keep 2h for 24h", you should execute
+	// zfs-cleaner every hour to ensure consistency, but it's not important
+	// *when* zfs-cleaner executes, as long as it's in a shorter span than
+	// the keep frequency.
+	// The reference time is the standard UNIX epoch at midnight January
+	// 1st 1970, but that's not important, as long it's guaranteed to be
+	// in the past.
+
+	// Calculate how much to move the start back in time to snap to a time
+	// aligned to the frequency.
+	offset := time.Duration(start.UnixNano()) % frequency
+
+	// Do the actual move. If start was already snapped (by chance) when
+	// passed, this does nothing since offset will be zero.
+	start = start.Add(-offset)
+
 	for s := l.Next(start); s != nil; s = l.Next(s.Creation.Add(frequency)) {
 		s.Keep = true
 	}
