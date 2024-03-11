@@ -37,33 +37,72 @@ playground/fs1@snap5	1491916496
 	empty = SnapshotList{}
 )
 
+var _ Executor = (*testExecutor)(nil)
+
+type testExecutor struct {
+	zfsCommandName        string
+	getSnapshotListResult []byte
+	getSnapshotListError  error
+}
+
+func (t *testExecutor) GetSnapshotList(dataset string) ([]byte, error) {
+	return t.getSnapshotListResult, t.getSnapshotListError
+}
+
+func (t *testExecutor) GetFilesystems() ([]byte, error) {
+	panic("implement me")
+}
+
+func (t *testExecutor) HasSnapshot(dataset string) (bool, error) {
+	panic("implement me")
+}
+
+func (t *testExecutor) DestroySnapshot(dataset string) ([]byte, error) {
+	return nil, nil
+}
+
 func TestNewSnapshotListFromOutput(t *testing.T) {
-	s, err := NewSnapshotListFromOutput(exampleOutput1, "playground/fs1")
+	zfsExecutor := &testExecutor{
+		getSnapshotListResult: []byte(`playground/fs1@snap1	1492989570
+playground/fs1@snap2	1492989572
+playground/fs1@snap3	1492989573
+playground/fs1@snap4	1492989574
+playground/fs1@snap5	1492989587
+`),
+	}
+	list := SnapshotList{}
+	s, err := list.NewSnapshotListFromDataset(zfsExecutor, "playground/fs1")
 	if err != nil {
 		t.Fatalf("NewSnapshotListFromOutput() errored: %s", err.Error())
 	}
 
-	if len(s) != 9 {
-		t.Fatalf("NewSnapshotListFromOutput() returned wrong number of snapshots. Got %d, expected %d", len(s), 9)
+	if len(s) != 5 {
+		t.Fatalf("NewSnapshotListFromOutput() returned wrong number of snapshots. Got %d, expected %d", len(s), 5)
 	}
 }
 
 func TestNewSnapshotListFromOutputUnsorted(t *testing.T) {
-	_, err := NewSnapshotListFromOutput(unsortedOutput, "playground/fs1")
+	zfsExecutor := &testExecutor{
+		getSnapshotListResult: []byte(`playground/fs1@snap1	1492989570
+playground/fs1@snap2	1492989572
+playground/fs1@snap4	1492989594
+playground/fs1@snap3	1492989573
+playground/fs1@snap5	1492989587
+`),
+	}
+	list := SnapshotList{}
+	_, err := list.NewSnapshotListFromDataset(zfsExecutor, "playground/fs1")
 	if err == nil {
 		t.Fatalf("NewSnapshotListFromOutput() did not err on unsorted input")
 	}
 }
 
 func TestNewSnapshotListFromOutputBroken(t *testing.T) {
-	// Test for two many arguments.
-	_, err := NewSnapshotListFromOutput([]byte("three argument yay"), "playground/fs1")
-	if err == nil {
-		t.Fatalf("NewSnapshotListFromOutput() did not err on broken input")
+	zfsExecutor := &testExecutor{
+		getSnapshotListResult: []byte(`three argument yay`),
 	}
-
-	// Test for a non-integer creation-time.
-	_, err = NewSnapshotListFromOutput([]byte("non integer"), "playground/fs1")
+	list := SnapshotList{}
+	_, err := list.NewSnapshotListFromDataset(zfsExecutor, "playground/fs1")
 	if err == nil {
 		t.Fatalf("NewSnapshotListFromOutput() did not err on broken input")
 	}

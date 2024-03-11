@@ -9,7 +9,7 @@ import (
 )
 
 type (
-	// Snapshot represents a sinle ZFS snapshot.
+	// Snapshot represents a single ZFS snapshot.
 	Snapshot struct {
 		Name     string
 		Creation time.Time
@@ -61,6 +61,5 @@ func (s *Snapshot) SnapshotName() string {
 	if len(parts) != 2 {
 		return s.Name
 	}
-
 	return parts[1]
 }
