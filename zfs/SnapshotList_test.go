@@ -57,6 +57,10 @@ func (t *testExecutor) HasSnapshot(dataset string) (bool, error) {
 	panic("implement me")
 }
 
+func (t *testExecutor) HasHolds(dataset string) (bool, error) {
+	return false, nil
+}
+
 func (t *testExecutor) DestroySnapshot(dataset string) ([]byte, error) {
 	return nil, nil
 }
