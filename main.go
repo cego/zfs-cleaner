@@ -61,6 +61,10 @@ func processAll(now time.Time, conf *conf.Config, zfsExecutor zfs.Executor) ([]z
 			}
 			list.KeepNamed(plan.Protect)
 			list.KeepLatest(plan.Latest)
+			err = list.KeepHolds(zfsExecutor)
+			if err != nil {
+				return nil, err
+			}
 			for _, period := range plan.Periods {
 				start := now.Add(-period.Age)
 				list.Sieve(start, period.Frequency)
