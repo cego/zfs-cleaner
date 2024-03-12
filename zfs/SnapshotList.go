@@ -109,6 +109,20 @@ func (l SnapshotList) KeepOldest(num int) {
 	}
 }
 
+// KeepHolds will keep all snapshots with zfs holds on it.
+func (l SnapshotList) KeepHolds(zfsExecutor Executor) error {
+	for _, snapshot := range l {
+		hasHolds, err := zfsExecutor.HasHolds(snapshot.Name)
+		if err != nil {
+			return err
+		}
+		if hasHolds {
+			snapshot.Keep = true
+		}
+	}
+	return nil
+}
+
 // Sieve will mark snapshots to keep according to start time and frequency.
 func (l SnapshotList) Sieve(start time.Time, frequency time.Duration) {
 	// The ZFS resolution on creation time is one second. If we get a frequency

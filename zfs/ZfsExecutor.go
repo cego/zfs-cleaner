@@ -10,6 +10,7 @@ type Executor interface {
 	GetSnapshotList(dataset string) ([]byte, error)
 	GetFilesystems() ([]byte, error)
 	HasSnapshot(dataset string) (bool, error)
+	HasHolds(dataset string) (bool, error)
 	DestroySnapshot(dataset string) ([]byte, error)
 }
 
@@ -60,6 +61,19 @@ func (z *executorImpl) HasSnapshot(dataset string) (bool, error) {
 		return false, err
 	}
 	return len(output) > 0, nil
+}
+
+func (z *executorImpl) HasHolds(snapshot string) (bool, error) {
+	argsStr := fmt.Sprintf("holds -H %s", snapshot)
+	args := strings.Fields(argsStr)
+	output, err := exec.Command(z.zfsCommandName, args...).Output()
+	if exitError, ok := err.(*exec.ExitError); ok {
+		return false, fmt.Errorf("failed to get snapshot holds to see if the snapshots has any holds: %s error: %s", snapshot, exitError.Stderr)
+	}
+	if err != nil {
+		return false, err
+	}
+	return len(output) != 0, nil
 }
 
 func (z *executorImpl) DestroySnapshot(snapshot string) ([]byte, error) {
