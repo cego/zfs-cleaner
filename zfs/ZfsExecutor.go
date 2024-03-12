@@ -63,12 +63,12 @@ func (z *executorImpl) HasSnapshot(dataset string) (bool, error) {
 	return len(output) > 0, nil
 }
 
-func (z *executorImpl) HasHolds(dataset string) (bool, error) {
-	argsStr := fmt.Sprintf("holds -H %s", dataset)
+func (z *executorImpl) HasHolds(snapshot string) (bool, error) {
+	argsStr := fmt.Sprintf("holds -H %s", snapshot)
 	args := strings.Fields(argsStr)
 	output, err := exec.Command(z.zfsCommandName, args...).Output()
 	if exitError, ok := err.(*exec.ExitError); ok {
-		return false, fmt.Errorf("failed to get snapshot holds to see if the snapshots has any holds: %s error: %s", dataset, exitError.Stderr)
+		return false, fmt.Errorf("failed to get snapshot holds to see if the snapshots has any holds: %s error: %s", snapshot, exitError.Stderr)
 	}
 	if err != nil {
 		return false, err

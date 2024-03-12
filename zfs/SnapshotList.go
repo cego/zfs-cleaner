@@ -112,7 +112,7 @@ func (l SnapshotList) KeepOldest(num int) {
 // KeepHolds will keep all snapshots with zfs holds on it.
 func (l SnapshotList) KeepHolds(zfsExecutor Executor) error {
 	for _, snapshot := range l {
-		hasHolds, err := zfsExecutor.HasHolds(snapshot.SnapshotName())
+		hasHolds, err := zfsExecutor.HasHolds(snapshot.Name)
 		if err != nil {
 			return err
 		}
