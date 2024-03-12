@@ -33,4 +33,4 @@ jobs:
           binary_name: "zfs-cleaner"
           extra_files: LICENSE README.md
           sha256sum: true
-          ldflags: "-X main.version=$(shell git describe --tags --dirty)"
+          ldflags: "-X main.version=${{ github.ref_name }}"
