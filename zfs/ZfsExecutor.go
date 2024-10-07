@@ -1,7 +1,6 @@
 package zfs
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -33,9 +32,9 @@ func (z *executorImpl) HasZFSCommand() error {
 	if stat, err := os.Stat(z.zfsCommandName); err == nil {
 		// Is executable by others
 		if stat.Mode()&0001 != 0 {
-			return errors.New("ZFS command is not executable")
+			return nil
 		}
-		return nil
+		return fmt.Errorf("ZFS command %s is not executable", z.zfsCommandName)
 	}
 	return fmt.Errorf("ZFS command %s not found", z.zfsCommandName)
 }
