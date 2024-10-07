@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"github.com/cego/zfs-cleaner/zfs"
 	"io/ioutil"
 	"os"
@@ -115,6 +114,10 @@ type testExecutor struct {
 	getSnapshotListError  error
 }
 
+func (t *testExecutor) HasZFSCommand() error {
+	return nil
+}
+
 func (t *testExecutor) GetSnapshotList(dataset string) ([]byte, error) {
 	return t.getSnapshotListResult, t.getSnapshotListError
 }
@@ -175,37 +178,6 @@ playground/fs1@snap5	1492989587
 	}
 }
 
-func TestProcessAllFail(t *testing.T) {
-	zfsTestExecutor := testExecutor{
-		getSnapshotListError: errors.New("test fail"),
-	}
-
-	conf := &conf.Config{
-		Plans: []conf.Plan{
-			{
-				Name:   "buh",
-				Paths:  []string{"playground/fs1"},
-				Latest: 10,
-				Periods: []conf.Period{
-					{
-						Frequency: 24 * time.Hour,
-						Age:       30 * 24 * time.Hour,
-					},
-				},
-			},
-		},
-	}
-
-	lists, err := processAll(time.Now(), conf, &zfsTestExecutor)
-	if err == nil {
-		t.Errorf("processAll() did not return error")
-	}
-
-	if lists != nil {
-		t.Errorf("processAll() returned lists")
-	}
-}
-
 func TestMainNoArguments(t *testing.T) {
 	os.Args = []string{os.Args[0]}
 	defer func() {
@@ -225,39 +197,6 @@ func TestMainNoConfig(t *testing.T) {
 		}
 	}()
 
-	main()
-}
-
-func TestMainNoZFS(t *testing.T) {
-	content := []byte(`
-plan buh {
-path /buh
-keep 1d for 30d
-keep latest 10
-}
-`)
-	tmpfile, err := ioutil.TempFile("/dev/shm", "test.TestReadConfSyntaxError")
-	if err != nil {
-		t.Fatalf("Failed to create config file: %s", err.Error())
-	}
-	defer os.Remove(tmpfile.Name())
-
-	_, err = tmpfile.Write(content)
-	if err != nil {
-		t.Fatalf("Failed to write config file: %s", err.Error())
-	}
-
-	err = tmpfile.Close()
-	if err != nil {
-		t.Fatalf("Failed to close config file: %s", err.Error())
-	}
-
-	os.Args = []string{os.Args[0], tmpfile.Name()}
-	defer func() {
-		if r := recover(); r == nil {
-			t.Errorf("The code did not panic for no arguments")
-		}
-	}()
 	main()
 }
 

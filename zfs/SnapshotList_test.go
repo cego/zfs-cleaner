@@ -45,6 +45,10 @@ type testExecutor struct {
 	getSnapshotListError  error
 }
 
+func (t *testExecutor) HasZFSCommand() error {
+	return nil
+}
+
 func (t *testExecutor) GetSnapshotList(dataset string) ([]byte, error) {
 	return t.getSnapshotListResult, t.getSnapshotListError
 }
