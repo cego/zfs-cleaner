@@ -117,7 +117,7 @@ func clean(cmd *cobra.Command, args []string) error {
 		_ = syscall.Flock(fd, syscall.LOCK_UN)
 	}()
 	if err := zfsExecutor.HasZFSCommand(); err != nil {
-		return nil
+		return err
 	}
 	lists, err := processAll(now, conf, zfsExecutor)
 	if err != nil {
