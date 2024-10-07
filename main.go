@@ -57,7 +57,9 @@ func processAll(now time.Time, conf *conf.Config, zfsExecutor zfs.Executor) ([]z
 			list := zfs.SnapshotList{}
 			list, err := list.NewSnapshotListFromDataset(zfsExecutor, dataset)
 			if err != nil {
-				return nil, err
+				// Write and Continue when dataset is not found
+				fmt.Fprintf(os.Stderr, "%s\n", err.Error())
+				continue
 			}
 			list.KeepNamed(plan.Protect)
 			list.KeepLatest(plan.Latest)
@@ -114,6 +116,9 @@ func clean(cmd *cobra.Command, args []string) error {
 		// We can ignore errors here, we're exiting anyway.
 		_ = syscall.Flock(fd, syscall.LOCK_UN)
 	}()
+	if err := zfsExecutor.HasZFSCommand(); err != nil {
+		return err
+	}
 	lists, err := processAll(now, conf, zfsExecutor)
 	if err != nil {
 		return err
